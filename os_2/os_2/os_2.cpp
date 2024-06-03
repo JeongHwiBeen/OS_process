@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -17,10 +17,11 @@
 using namespace std;
 #pragma warning(disable:4996)
 
+// 리스트 노드 구조체
 struct ListNode {
     function<void()> process;
     ListNode* next;
-    bool isBackground; // 백그라운드 프로세스인지 여부를 나타내는 플래그
+    bool isBackground;
     ListNode(function<void()>&& proc, bool bg) : process(move(proc)), next(nullptr), isBackground(bg) {}
 };
 
@@ -32,6 +33,7 @@ struct StackNode {
     StackNode() : next(nullptr), list(nullptr) {}
 };
 
+// 함수 선언
 char** parse(const string& command);
 void exec(char** args, const string& original_command);
 void echo(const vector<string>& args, int period, int timeout);
@@ -44,6 +46,7 @@ void dequeue();
 void promote();
 void split_n_merge(StackNode* stack_node);
 
+// 전역 변수
 StackNode* stack = new StackNode();
 StackNode* stack_top = stack;
 StackNode* P = stack;
@@ -53,6 +56,7 @@ mutex print_mutex;  // 출력 보호를 위한 뮤텍스
 const int THRESHOLD = 5;  // 임계치 (예시)
 atomic<int> background_process_count(0);  // 백그라운드 프로세스 개수를 저장하는 변수
 
+// 백그라운드 작업자 함수
 void background_worker() {
     while (true) {
         this_thread::sleep_for(chrono::seconds(1));
@@ -105,6 +109,7 @@ int main() {
     return 0;
 }
 
+// 명령어를 파싱하는 함수
 char** parse(const string& command) {
     istringstream stream(command);
     vector<string> tokens;
@@ -122,6 +127,7 @@ char** parse(const string& command) {
     return tokens_array;
 }
 
+// 명령어를 실행하는 함수
 void exec(char** args, const string& original_command) {
     if (args[0][0] == '\0') return;
     string command = args[0];
@@ -219,6 +225,7 @@ void exec(char** args, const string& original_command) {
     }
 }
 
+// 프로세스를 큐에 추가하는 함수
 void enqueue(function<void()>&& process, bool isForeground, const string& original_command) {
     ListNode* new_node = new ListNode(move(process), !isForeground);
     lock_guard<mutex> lock(stack_mutex);
@@ -257,6 +264,7 @@ void enqueue(function<void()>&& process, bool isForeground, const string& origin
     }
 }
 
+// 큐에서 프로세스를 제거하고 실행하는 함수
 void dequeue() {
     ListNode* node_to_run = nullptr;
     bool isBackgroundProcess = false;
@@ -296,6 +304,7 @@ void dequeue() {
     }
 }
 
+// 프로세스를 상위 리스트로 승격하는 함수
 void promote() {
     lock_guard<mutex> lock(stack_mutex);
 
@@ -337,6 +346,7 @@ void promote() {
     }
 }
 
+// 리스트를 분할하고 병합하는 함수
 void split_n_merge(StackNode* stack_node) {
     lock_guard<mutex> lock(stack_mutex);
 
@@ -380,6 +390,7 @@ void split_n_merge(StackNode* stack_node) {
     }
 }
 
+// echo 명령어를 처리하는 함수
 void echo(const vector<string>& args, int period, int timeout) {
     auto start_time = chrono::steady_clock::now();
     while (true) {
@@ -399,12 +410,14 @@ void echo(const vector<string>& args, int period, int timeout) {
     }
 }
 
+// dummy 명령어를 처리하는 함수
 void dummy(int count) {
     for (int i = 0; i < count; ++i) {
         lock_guard<mutex> lock(print_mutex);
     }
 }
 
+// gcd 명령어를 처리하는 함수
 int gcd(int a, int b) {
     while (b != 0) {
         int temp = b;
@@ -414,6 +427,7 @@ int gcd(int a, int b) {
     return a;
 }
 
+// prime 명령어를 처리하는 함수
 void prime(int x) {
     vector<bool> is_prime(x + 1, true);
     is_prime[0] = is_prime[1] = false;
@@ -429,6 +443,7 @@ void prime(int x) {
     cout << prime_count << endl;
 }
 
+// sum 명령어를 처리하는 함수
 void sum(int x, int m) {
     auto sum_part = [](int start, int end) {
         vector<int> values(end - start);
