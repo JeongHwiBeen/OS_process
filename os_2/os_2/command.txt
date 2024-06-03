@@ -1,0 +1,5 @@
+&echo abc -p 2 -d 8 -n 2
+sum 1000000 -m 4 -n 4
+gcd 12 18
+dummy -n 3
+prime 10
